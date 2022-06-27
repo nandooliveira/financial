@@ -14,7 +14,8 @@ db.execute(create_accounts_sql)
 
 create_batch_payment_sql = <<-SQL
   CREATE TABLE IF NOT EXISTS batch_payments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    uuid VARCHAR
   )
 SQL
 db.execute(create_batch_payment_sql)
