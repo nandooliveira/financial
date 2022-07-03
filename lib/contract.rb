@@ -14,17 +14,17 @@ class PaymentFactory
 
   attr_reader :factory_class, :attributes
 
-  def method_missing(name, *args, &block)
+  def method_missing(name, *args)
     value = name == 'pay_at' ? Date.parse(args[0]) : args[0]
     attributes[name] = value
   end
 end
 
 class DefinitionProxy
-  def payment(owner_identifier, &block)
+  def payment(owner_identifier, &)
     factory = PaymentFactory.new
 
-    factory.instance_eval(&block) if block_given?
+    factory.instance_eval(&) if block_given?
 
     Contract.registry[owner_identifier] = factory
   end
@@ -42,9 +42,9 @@ module Contract
     @enqueued_to_process
   end
 
-  def self.define(&block)
+  def self.define(&)
     definition_proxy = DefinitionProxy.new
-    definition_proxy.instance_eval(&block)
+    definition_proxy.instance_eval(&)
   end
 
   def self.process(owner_identifier)
@@ -69,9 +69,9 @@ Contract.define do
   payment payment_identifier do
     from      bank_code: 1, account_number: 123, account_branch: 123
     to        bank_code: 2, account_number: 321, account_branch: 321
-    currency  "USD"
-    amount    "100"
-    pay_at    "2022-10-20"
+    currency  'USD'
+    amount    '100'
+    pay_at    '2022-10-20'
   end
 end
 

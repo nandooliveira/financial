@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 module Financial
   class << self
     attr_accessor :config
 
-    def configure(&block)
+    def configure(&)
       self.config ||= Config.new
-      instance_eval(&block)
+      instance_eval(&)
     end
   end
 

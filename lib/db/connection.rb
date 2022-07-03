@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 require 'sqlite3'
 
 module DB
   module Connection
-    extend self
+    module_function
 
     def open
-      @conn ||= SQLite3::Database.open("test.db")
+      @conn ||= SQLite3::Database.open('test.db')
     end
 
     def close

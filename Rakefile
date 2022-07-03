@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rubocop/rake_task'
 
 task default: %w[lint test]
@@ -14,4 +16,3 @@ end
 task :test do
   ruby 'test/helloworld_test.rb'
 end
-
