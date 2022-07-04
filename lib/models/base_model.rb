@@ -1,7 +1,12 @@
+# frozen_string_literal: true
+
 require_relative '../db/connection'
+require_relative '../track_attributes'
 
 module Models
   class BaseModel
+    include ::TrackAttributes
+
     class << self
       def open_connection
         ::DB::Connection.open
@@ -66,6 +71,26 @@ module Models
         puts e
       ensure
         close_connection
+      end
+
+      def update(instance, **params)
+        conn = open_connection
+        update_fields = params.map { |k, v| " #{k} = '#{v}' " }.join(', ')
+        conn.execute("UPDATE #{@table_name} SET #{update_fields} WHERE id = #{instance.id}")
+
+        instance = get(id: instance.id)
+      rescue SQLite3::Exception => e
+        puts 'Exception occurred'
+        puts e
+      ensure
+        close_connection
+      end
+
+      def save(instance)
+        conn = open_connection
+        input = instance.attr_accessors.except(:id).each { |field| params[field] = instance.send(field) }
+
+        id.nil? ? create(input) : update(input)
       end
     end
   end

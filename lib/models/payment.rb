@@ -5,11 +5,11 @@ require_relative './account'
 
 module Models
   class Payment < BaseModel
-    attr_accessor :uuid, :id, :amount, :currency
+    attr_accessor :uuid, :id, :amount, :currency, :from_account_id, :to_account_id, :pay_at, :batch_payment_id
 
     table_name :payments
 
-    def build(uuid:, amount:, currency:, from_account_id:, to_account_id:, pay_at:, batch_payment_id:, id: nil)
+    def self.build(uuid:, amount:, currency:, from_account_id:, to_account_id:, pay_at:, batch_payment_id:, id: nil)
       ::Models::Payment.new.tap do |payment|
         payment.id = id
         payment.uuid = uuid
