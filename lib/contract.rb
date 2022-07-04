@@ -19,19 +19,54 @@ class PaymentFactory
     value = name == 'pay_at' ? Date.parse(args[0]) : args[0]
     attributes[name] = value
   end
+
+  def process(uuid)
+    instance = @factory_class.new
+    instance.uuid = uuid
+
+    @attributes.each do |attribute_name, value|
+      instance.send("#{attribute_name}=", value)
+    end
+
+    instance.save
+  end
 end
 
 class BatchPaymentFactory
   def initialize
-    @factory_class = BatchPayment
+    @factory_class = ::Models::BatchPayment
     @attributes    = {}
   end
 
   attr_reader :factory_class, :attributes
 
   def method_missing(name, *args)
-    value = name == 'pay_at' ? Date.parse(args[0]) : args[0]
-    attributes[name] = value
+    attributes[name] = args[0]
+  end
+
+  def payment(&)
+    factory = PaymentFactory.new
+
+    factory.instance_eval(&) if block_given?
+
+    attributes[:payments] ||= []
+    attributes[:payments] << factory
+  end
+
+  def process(uuid)
+    instance = @factory_class.new
+    instance.uuid = uuid
+    instance = instance.save
+
+    @attributes[:payments].each do |payment_factory|
+      payment_factory.from(@attributes[:from])
+      payment_factory.pay_at(@attributes[:pay_at])
+      payment_factory.currency(@attributes[:currency])
+      payment_factory.batch_payment_id(instance.id)
+      payment_factory.process(SecureRandom.uuid)
+    end
+
+    instance.save
   end
 end
 
@@ -71,15 +106,8 @@ module Contract
   end
 
   def self.process(owner_identifier)
-    factory  = registry[owner_identifier]
-    instance = factory.factory_class.new
-    instance.uuid = owner_identifier
-
-    factory.attributes.each do |attribute_name, value|
-      instance.send("#{attribute_name}=", value)
-    end
-
-    instance.save
+    factory = registry[owner_identifier]
+    instance = factory.process(owner_identifier)
 
     enqueued_to_process << instance
 
