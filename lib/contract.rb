@@ -1,9 +1,14 @@
 # frozen_string_literal: true
 
 require 'date'
+require 'securerandom'
 
 class Payment
   attr_accessor :from, :to, :currency, :amount, :pay_at
+
+  def create
+
+  end
 end
 
 class PaymentFactory
@@ -20,9 +25,31 @@ class PaymentFactory
   end
 end
 
+class BatchPaymentFactory
+  def initialize
+    @factory_class = BatchPayment
+    @attributes    = {}
+  end
+
+  attr_reader :factory_class, :attributes
+
+  def method_missing(name, *args)
+    value = name == 'pay_at' ? Date.parse(args[0]) : args[0]
+    attributes[name] = value
+  end
+end
+
 class DefinitionProxy
   def payment(owner_identifier, &)
     factory = PaymentFactory.new
+
+    factory.instance_eval(&) if block_given?
+
+    Contract.registry[owner_identifier] = factory
+  end
+
+  def batch_payment(owner_identifier, &)
+    factory = BatchPaymentFactory.new
 
     factory.instance_eval(&) if block_given?
 

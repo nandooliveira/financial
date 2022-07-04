@@ -6,3 +6,5 @@ gem 'minitest'
 gem 'rake'
 gem 'rubocop'
 gem 'sqlite3'
+
+gem 'pry'

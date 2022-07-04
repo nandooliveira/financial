@@ -11,6 +11,8 @@ module DB
     end
 
     def close
+      return if @conn.nil?
+
       @conn.close
       @conn = nil
     end
