@@ -4,17 +4,19 @@ require_relative './base_model'
 
 module Models
   class BatchPayment < BaseModel
-    attr_reader :uuid, :id
+    attr_accessor :uuid, :id
 
     table_name :batch_payments
 
-    def initialize(uuid:, id: nil)
-      @id               = id
-      @uuid             = uuid
+    def self.build(uuid:, id: nil)
+      ::Models::BatchPayment.new.tap do |batch_payment|
+        batch_payment.id = id
+        batch_payment.uuid = uuid
+      end
     end
 
     def self.mount_from_result(result)
-      ::Models::BatchPayment.new(
+      ::Models::BatchPayment.build(
         id: result[0],
         uuid: result[1]
       )

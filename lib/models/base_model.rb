@@ -2,10 +2,6 @@ require_relative '../db/connection'
 
 module Models
   class BaseModel
-    def initialize
-      raise ::NotImplementedError
-    end
-
     class << self
       def open_connection
         ::DB::Connection.open

@@ -3,17 +3,13 @@
 require 'date'
 require 'securerandom'
 
-class Payment
-  attr_accessor :from, :to, :currency, :amount, :pay_at
-
-  def create
-
-  end
-end
+require_relative './models/account'
+require_relative './models/payment'
+require_relative './models/batch_payment'
 
 class PaymentFactory
   def initialize
-    @factory_class = Payment
+    @factory_class = ::Models::Payment
     @attributes    = {}
   end
 
@@ -90,16 +86,16 @@ end
 
 # example
 
-payment_identifier = SecureRandom.uuid
+# payment_identifier = SecureRandom.uuid
 
-Contract.define do
-  payment payment_identifier do
-    from      bank_code: 1, account_number: 123, account_branch: 123
-    to        bank_code: 2, account_number: 321, account_branch: 321
-    currency  'USD'
-    amount    '100'
-    pay_at    '2022-10-20'
-  end
-end
+# Contract.define do
+#   payment payment_identifier do
+#     from      bank_code: 1, account_number: 123, account_branch: 123
+#     to        bank_code: 2, account_number: 321, account_branch: 321
+#     currency  'USD'
+#     amount    '100'
+#     pay_at    '2022-10-20'
+#   end
+# end
 
-Contract.process(payment_identifier)
+# Contract.process(payment_identifier)

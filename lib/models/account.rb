@@ -4,19 +4,21 @@ require 'pry'
 
 module Models
   class Account < BaseModel
-    attr_reader :id, :bank_code, :account_number, :account_branch
+    attr_accessor :id, :bank_code, :account_number, :account_branch
 
     table_name :accounts
 
-    def initialize(bank_code:, account_number:, account_branch:, id: nil)
-      @id             = id
-      @bank_code      = bank_code
-      @account_number = account_number
-      @account_branch = account_branch
+    def self.build(bank_code:, account_number:, account_branch:, id: nil)
+      ::Models::Account.new.tap do |account|
+        account.id = id
+        account.bank_code = bank_code
+        account.account_number = account_number
+        account.account_branch = account_branch
+      end
     end
 
     def self.mount_from_result(result)
-      ::Models::Account.new(id: result[0], bank_code: result[1], account_number: result[2], account_branch: result[3])
+      ::Models::Account.build(id: result[0], bank_code: result[1], account_number: result[2], account_branch: result[3])
     end
   end
 end
