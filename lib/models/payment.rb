@@ -41,5 +41,15 @@ module Models
     def to_account
       ::Models::Account.find_by(to_account_id: @to_account_id)
     end
+
+    def from=(params)
+      account = ::Models::Account.create(params)
+      self.from_account_id = account.id
+    end
+
+    def to=(params)
+      account = ::Models::Account.create(params)
+      self.to_account_id = account.id
+    end
   end
 end

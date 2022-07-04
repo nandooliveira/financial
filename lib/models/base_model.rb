@@ -61,10 +61,14 @@ module Models
         close_connection
       end
 
-      def create(**params)
+      def create(params)
         conn = open_connection
-        conn.execute("INSERT INTO #{@table_name} (#{params.keys.join(', ')}) VALUES (?, ?, ?)", params.values)
+        conn.execute(
+          "INSERT INTO #{@table_name} (#{params.keys.join(', ')}) VALUES (#{params.values.map { |_| '?' }.join(', ')})",
+          params.values
+        )
 
+        puts "INSERTED (#{@table_name}) ID: #{conn.last_insert_row_id}"
         get(id: conn.last_insert_row_id)
       rescue SQLite3::Exception => e
         puts 'Exception occurred'
@@ -73,12 +77,14 @@ module Models
         close_connection
       end
 
-      def update(instance, **params)
+      def update(instance, params)
         conn = open_connection
         update_fields = params.map { |k, v| " #{k} = '#{v}' " }.join(', ')
         conn.execute("UPDATE #{@table_name} SET #{update_fields} WHERE id = #{instance.id}")
 
         instance = get(id: instance.id)
+
+        instance
       rescue SQLite3::Exception => e
         puts 'Exception occurred'
         puts e
@@ -88,10 +94,20 @@ module Models
 
       def save(instance)
         conn = open_connection
-        input = instance.attr_accessors.except(:id).each { |field| params[field] = instance.send(field) }
+        input = {}.tap do |params|
+          (instance.attr_accessors - [:id]).each { |field| params[field] = instance.send(field) }
+        end
 
-        id.nil? ? create(input) : update(input)
+        instance.id.nil? ? create(input) : update(instance, input)
       end
+    end
+
+    def update(**params)
+      self.class.update(self, params)
+    end
+
+    def save
+      self.class.save(self)
     end
   end
 end

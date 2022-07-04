@@ -73,10 +73,13 @@ module Contract
   def self.process(owner_identifier)
     factory  = registry[owner_identifier]
     instance = factory.factory_class.new
+    instance.uuid = owner_identifier
 
     factory.attributes.each do |attribute_name, value|
       instance.send("#{attribute_name}=", value)
     end
+
+    instance.save
 
     enqueued_to_process << instance
 
