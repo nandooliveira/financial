@@ -32,12 +32,27 @@ end
 
 ::Models::Payment.find_by(uuid: payment_identifier)
 
-Contract.process(payment_identifier)
-
-::Models::Payment.find_by(uuid: payment_identifier)
-
 Contract.enqueued_to_process
 ```
+
+```ruby
+payment_identifier = SecureRandom.uuid
+
+Contract.define do
+  payment payment_identifier do
+    from         bank_code: 1, account_number: 123, account_branch: 123
+    to           bank_code: 2, account_number: 321, account_branch: 321
+    currency     'USD'
+    amount       '100'
+    pay_at       '2022-10-20'
+    repeat_times 6
+    repeat_each  1.month
+  end
+end
+Contract.process(payment_identifier)
+Contract.enqueued_to_process
+```
+
 
 ```ruby
 identifier = SecureRandom.uuid

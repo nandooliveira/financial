@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'active_support/all'
 require 'date'
 require 'securerandom'
 
@@ -16,19 +17,31 @@ class PaymentFactory
   attr_reader :factory_class, :attributes
 
   def method_missing(name, *args)
-    value = name == 'pay_at' ? Date.parse(args[0]) : args[0]
-    attributes[name] = value
+    attributes[name] = args[0]
   end
 
+  NON_PERSISTIBLE_ATTRIBUTES = %i[repeat_each repeat_times].freeze
   def process(uuid)
     instance = @factory_class.new
     instance.uuid = uuid
 
-    @attributes.each do |attribute_name, value|
+    @attributes.except(*NON_PERSISTIBLE_ATTRIBUTES).each do |attribute_name, value|
       instance.send("#{attribute_name}=", value)
     end
 
-    instance.save
+    return instance = instance.save unless @attributes[:repeat_times] && @attributes[:repeat_each]
+
+    instances = [instance]
+
+    @attributes[:repeat_times].times do
+      new_instance = instances.last.dup
+      new_instance.id = nil
+      new_instance.pay_at = (Date.parse(new_instance.pay_at) + @attributes[:repeat_each]).to_s
+
+      instances << new_instance.save
+    end
+
+    instances
   end
 end
 
@@ -107,11 +120,11 @@ module Contract
 
   def self.process(owner_identifier)
     factory = registry[owner_identifier]
-    instance = factory.process(owner_identifier)
+    results = factory.process(owner_identifier)
 
-    enqueued_to_process << instance
+    (enqueued_to_process << results).flatten
 
-    instance
+    results
   end
 end
 

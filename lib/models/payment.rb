@@ -13,6 +13,7 @@ module Models
       ::Models::Payment.new.tap do |payment|
         payment.id = id
         payment.uuid = uuid
+        payment.amount = amount
         payment.currency = currency
         payment.from_account_id = from_account_id
         payment.to_account_id = to_account_id
